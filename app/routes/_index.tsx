@@ -1,38 +1,38 @@
-import type { V2_MetaFunction } from "@remix-run/node";
+import type { LoaderArgs, V2_MetaFunction } from '@remix-run/node';
+
+import styled from 'styled-components';
+
+import Navbar from '~/components/Navbar';
+
+import { json } from '@remix-run/node';
+import { getUser } from '~/utils/session.server';
+import { useLoaderData } from '@remix-run/react';
+
+const Box = styled.div`
+  height: 100vh;
+  width: 100vw;
+`;
 
 export const meta: V2_MetaFunction = () => {
-  return [{ title: "New Remix App" }];
+  return [{ title: 'Open Source Academy' }];
 };
 
-export default function Index() {
+export const loader = async ({ request }: LoaderArgs) => {
+  const user = await getUser(request);
+
+  return json({ user });
+};
+
+const Index: React.FC = () => {
+  const data = useLoaderData<typeof loader>();
+
+  console.log(data);
+
   return (
-    <div style={{ fontFamily: "system-ui, sans-serif", lineHeight: "1.4" }}>
-      <h1>Welcome to Remix</h1>
-      <ul>
-        <li>
-          <a
-            target="_blank"
-            href="https://remix.run/tutorials/blog"
-            rel="noreferrer"
-          >
-            15m Quickstart Blog Tutorial
-          </a>
-        </li>
-        <li>
-          <a
-            target="_blank"
-            href="https://remix.run/tutorials/jokes"
-            rel="noreferrer"
-          >
-            Deep Dive Jokes App Tutorial
-          </a>
-        </li>
-        <li>
-          <a target="_blank" href="https://remix.run/docs" rel="noreferrer">
-            Remix Docs
-          </a>
-        </li>
-      </ul>
-    </div>
+    <Box>
+      <Navbar isLoggedIn={Boolean(data.user)} />
+    </Box>
   );
-}
+};
+
+export default Index;

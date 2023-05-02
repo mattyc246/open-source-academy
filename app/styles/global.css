@@ -1,0 +1,36 @@
+:root {
+  --color-black: #000000;
+  --color-white: #ffffff;
+  --color-primary: #16213e;
+  --color-primary-light: #0f3460;
+  --color-secondary: #e94560;
+  --color-secondary-light: #e66a7e;
+  --color-accent: #533483;
+}
+
+* {
+  box-sizing: border-box;
+  line-height: normal;
+}
+
+body {
+  font-family: 'Nunito', sans-serif;
+  background-color: var(--color-primary);
+  color: var(--color-white);
+}
+
+a {
+  text-decoration: none;
+  color: var(--color-secondary);
+}
+
+a:hover {
+  text-decoration: underline;
+  color: var(--color-secondary-light);
+}
+
+button {
+  border: none;
+  box-shadow: none;
+  outline: none;
+}
