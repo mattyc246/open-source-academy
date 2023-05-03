@@ -3,7 +3,7 @@ import type { User } from '@prisma/client';
 
 import styled from 'styled-components';
 
-import Navbar from '~/components/Navbar';
+import Navbar from '~/components/ui/Navbar';
 
 import { json } from '@remix-run/node';
 import { getUser } from '~/utils/session.server';

@@ -6,9 +6,9 @@ import styled from 'styled-components';
 import { Link, useSearchParams, Form, useActionData } from '@remix-run/react';
 import { json, redirect } from '@remix-run/node';
 
-import AuthCard from '~/components/AuthCard';
-import Button from '~/components/Button';
-import TextField from '~/components/TextField';
+import AuthCard from '~/components/ui/AuthCard';
+import Button from '~/components/ui/Button';
+import TextField from '~/components/ui/TextField';
 
 import { colors, fontSize } from '~/styles';
 import { badRequest } from '~/utils/request.server';

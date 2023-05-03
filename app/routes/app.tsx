@@ -6,13 +6,15 @@ import styled from 'styled-components';
 import { Outlet, useLoaderData } from '@remix-run/react';
 import { json, redirect } from '@remix-run/node';
 
-import Navbar from '~/components/Navbar';
+import Navbar from '~/components/ui/Navbar';
 
 import { getUser } from '~/utils/session.server';
 
 const Main = styled.main`
   min-height: 100vh;
   width: 100vw;
+  display: flex;
+  flex-direction: column;
 `;
 
 export const loader = async ({ request }: LoaderArgs) => {

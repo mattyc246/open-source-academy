@@ -17,6 +17,7 @@ body {
   font-family: 'Nunito', sans-serif;
   background-color: var(--color-primary);
   color: var(--color-white);
+  overscroll-behavior: none;
 }
 
 a {

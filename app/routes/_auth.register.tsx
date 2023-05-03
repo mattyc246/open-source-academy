@@ -1,15 +1,15 @@
 import type { V2_MetaFunction } from '@remix-run/react';
-import type { ActionArgs, LoaderArgs} from '@remix-run/node';
+import type { ActionArgs, LoaderArgs } from '@remix-run/node';
 
 import React, { useState } from 'react';
 import { Link, Form, useActionData } from '@remix-run/react';
 import { json, redirect } from '@remix-run/node';
 import styled from 'styled-components';
 
-import AuthCard from '~/components/AuthCard';
-import Checkbox from '~/components/Checkbox';
-import Button from '~/components/Button';
-import TextField from '~/components/TextField';
+import AuthCard from '~/components/ui/AuthCard';
+import Checkbox from '~/components/ui/Checkbox';
+import Button from '~/components/ui/Button';
+import TextField from '~/components/ui/TextField';
 
 import { colors, fontSize } from '~/styles';
 import { badRequest } from '~/utils/request.server';
