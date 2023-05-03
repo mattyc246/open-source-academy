@@ -10,6 +10,8 @@ interface TextFieldProps extends PropsWithChildren {
   placeholder?: string;
   type?: React.HTMLInputTypeAttribute;
   name?: string;
+  defaultValue?: string;
+  error?: string;
 }
 
 const FieldWrapper = styled.div`
@@ -36,11 +38,20 @@ const Input = styled.input`
     border: 2px solid ${colors.secondaryLight};
   }
 `;
+const Error = styled.small`
+  display: block;
+  color: ${colors.error};
+  margin: 0.25rem 0;
+  margin-left: 0.25rem;
+  font-size: ${fontSize.small};
+`;
 
 const TextField: React.FC<TextFieldProps> = ({
   label,
   name,
   placeholder,
+  defaultValue,
+  error,
   type
 }) => {
   return (
@@ -49,8 +60,10 @@ const TextField: React.FC<TextFieldProps> = ({
       <Input
         placeholder={placeholder ?? ''}
         name={name}
+        defaultValue={defaultValue}
         type={type ?? 'text'}
       />
+      {error && <Error>{error}</Error>}
     </FieldWrapper>
   );
 };

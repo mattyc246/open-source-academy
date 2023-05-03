@@ -26,8 +26,6 @@ export const loader = async ({ request }: LoaderArgs) => {
 const Index: React.FC = () => {
   const data = useLoaderData<typeof loader>();
 
-  console.log(data);
-
   return (
     <Box>
       <Navbar isLoggedIn={Boolean(data.user)} />

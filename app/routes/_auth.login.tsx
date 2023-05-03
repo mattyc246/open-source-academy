@@ -1,9 +1,10 @@
 import type { V2_MetaFunction } from '@remix-run/react';
-import type { ActionArgs } from '@remix-run/node';
+import type { ActionArgs, LoaderArgs } from '@remix-run/node';
 
 import React from 'react';
 import styled from 'styled-components';
-import { Link, useSearchParams, Form } from '@remix-run/react';
+import { Link, useSearchParams, Form, useActionData } from '@remix-run/react';
+import { json, redirect } from '@remix-run/node';
 
 import AuthCard from '~/components/AuthCard';
 import Button from '~/components/Button';
@@ -11,8 +12,14 @@ import TextField from '~/components/TextField';
 
 import { colors, fontSize } from '~/styles';
 import { badRequest } from '~/utils/request.server';
-import { createUserSession, getSession, login } from '~/utils/session.server';
-import { setErrorMessage, setSuccessMessage } from '~/utils/message.server';
+import {
+  createUserSession,
+  getSession,
+  getUser,
+  login
+} from '~/utils/session.server';
+import { setErrorMessage } from '~/utils/message.server';
+import { validateUrl } from '~/helpers/validationHelpers';
 
 const Container = styled.div`
   display: flex;
@@ -33,20 +40,6 @@ const CardFooter = styled.div`
   margin: 1rem 0;
 `;
 
-function validatePassword(password: string) {
-  if (password.length < 6) {
-    return 'Passwords must be at least 6 characters long';
-  }
-}
-
-function validateUrl(url: string) {
-  const urls = ['/'];
-  if (urls.includes(url)) {
-    return url;
-  }
-  return '/';
-}
-
 export const action = async ({ request }: ActionArgs) => {
   const session = await getSession(request.headers.get('cookie'));
   const form = await request.formData();
@@ -54,34 +47,19 @@ export const action = async ({ request }: ActionArgs) => {
   const email = form.get('email');
   const redirectTo = validateUrl((form.get('redirectTo') as string) || '/');
 
+  const fields = { password, email, redirectTo };
+
   if (typeof password !== 'string' || typeof email !== 'string') {
     setErrorMessage(session, 'Please provide all values');
-    return badRequest(session, {
-      fieldErrors: null,
-      fields: null,
-      formError: 'Form not submitted correctly.'
-    });
+    return badRequest(session, { fields });
   }
 
-  const fields = { password, email };
-  const fieldErrors = {
-    password: validatePassword(password)
-  };
-  if (Object.values(fieldErrors).some(Boolean)) {
-    return badRequest(session, {
-      fieldErrors,
-      fields,
-      formError: null
-    });
-  }
   const user = await login({ email, password });
 
   if (!user) {
     setErrorMessage(session, 'Email/Password combination is incorrect');
     return badRequest(session, {
-      fieldErrors: null,
-      fields,
-      formError: `Email/Password combination is incorrect`
+      fields
     });
   }
   return createUserSession(user.id, redirectTo);
@@ -91,8 +69,20 @@ export const meta: V2_MetaFunction = () => {
   return [{ title: 'Login | Open Source Academy' }];
 };
 
+export const loader = async ({ request }: LoaderArgs) => {
+  const user = await getUser(request);
+
+  if (user) {
+    return redirect('/');
+  }
+  
+  return json({});
+};
+
 const Login: React.FC = () => {
   const [searchParams] = useSearchParams();
+  const actionData = useActionData<typeof action>();
+
   return (
     <Container>
       <AuthCard>
@@ -101,6 +91,7 @@ const Login: React.FC = () => {
           <input
             type="hidden"
             name="redirectTo"
+            defaultValue={actionData?.fields.redirectTo}
             value={searchParams.get('redirectTo') ?? undefined}
           />
           <TextField

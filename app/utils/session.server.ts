@@ -95,7 +95,7 @@ export async function getUser(request: Request) {
 
   try {
     const user = await db.user.findUnique({
-      select: { id: true, email: true },
+      select: { id: true, email: true, name: true, role: true },
       where: { id: userId }
     });
     return user;

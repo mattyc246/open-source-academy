@@ -1,8 +1,9 @@
 import type { V2_MetaFunction } from '@remix-run/react';
-import type { ActionArgs } from '@remix-run/node';
+import type { ActionArgs, LoaderArgs} from '@remix-run/node';
 
 import React, { useState } from 'react';
-import { Link, Form } from '@remix-run/react';
+import { Link, Form, useActionData } from '@remix-run/react';
+import { json, redirect } from '@remix-run/node';
 import styled from 'styled-components';
 
 import AuthCard from '~/components/AuthCard';
@@ -16,8 +17,15 @@ import { db } from '~/utils/db.server';
 import {
   createUserSession,
   getSession,
+  getUser,
   register
 } from '~/utils/session.server';
+import {
+  validateEmail,
+  validateName,
+  validatePassword
+} from '~/helpers/validationHelpers';
+import { setErrorMessage } from '~/utils/message.server';
 
 const Container = styled.div`
   display: flex;
@@ -38,14 +46,6 @@ const Title = styled.h2`
   color: ${colors.black};
 `;
 
-function validatePassword(password: string, confirmPW: string) {
-  if (password.length < 6) {
-    return 'Passwords must be at least 6 characters long';
-  } else if (password !== confirmPW) {
-    return 'Passwords must be matching';
-  }
-}
-
 export const action = async ({ request }: ActionArgs) => {
   const session = await getSession(request.headers.get('cookie'));
   const form = await request.formData();
@@ -53,6 +53,7 @@ export const action = async ({ request }: ActionArgs) => {
   const confirmPassword = form.get('confirmPassword');
   const email = form.get('email');
   const name = form.get('name');
+  const acceptTC = form.get('acceptTC');
 
   if (
     typeof name !== 'string' ||
@@ -60,22 +61,30 @@ export const action = async ({ request }: ActionArgs) => {
     typeof email !== 'string' ||
     typeof confirmPassword !== 'string'
   ) {
+    setErrorMessage(session, 'Form is incomplete');
     return badRequest(session, {
       fieldErrors: null,
-      fields: null,
-      formError: 'Form not submitted correctly.'
+      fields: null
     });
   }
 
-  const fields = { password, email, name };
+  const fields = { password, email, name, confirmPassword };
   const fieldErrors = {
-    password: validatePassword(password, confirmPassword)
+    email: validateEmail(email),
+    password: validatePassword(password, confirmPassword),
+    name: validateName(name)
   };
+
+  if (!acceptTC) {
+    setErrorMessage(session, 'You must accept the Terms & Conditions');
+    return badRequest(session, { fieldErrors: null, fields });
+  }
+
   if (Object.values(fieldErrors).some(Boolean)) {
+    setErrorMessage(session, 'Registration details contain errors');
     return badRequest(session, {
       fieldErrors,
-      fields,
-      formError: null
+      fields
     });
   }
 
@@ -83,18 +92,18 @@ export const action = async ({ request }: ActionArgs) => {
     where: { email }
   });
   if (userExists) {
+    setErrorMessage(session, `User with email ${email} already exists`);
     return badRequest(session, {
       fieldErrors: null,
-      fields,
-      formError: `User with email ${email} already exists`
+      fields
     });
   }
   const user = await register({ name, email, password });
   if (!user) {
+    setErrorMessage(session, 'Something went wrong while creating the user');
     return badRequest(session, {
       fieldErrors: null,
-      fields,
-      formError: 'Something went wrong trying to create a new user.'
+      fields
     });
   }
   return createUserSession(user.id, '/');
@@ -104,29 +113,52 @@ export const meta: V2_MetaFunction = () => {
   return [{ title: 'Register | Open Source Academy' }];
 };
 
+export const loader = async ({ request }: LoaderArgs) => {
+  const user = await getUser(request);
+
+  if (user) {
+    return redirect('/');
+  }
+
+  return json({});
+};
+
 const Register: React.FC = () => {
   const [isTAndCAccepted, setIsTAndCAccepted] = useState<boolean>(false);
+  const actionData = useActionData<typeof action>();
+
   return (
     <Container>
       <AuthCard>
         <Title>Register Account</Title>
         <Form method="POST">
-          <TextField label="Name" name="name" placeholder="Full name" />
+          <TextField
+            label="Name"
+            name="name"
+            defaultValue={actionData?.fields?.name}
+            error={actionData?.fieldErrors?.name}
+            placeholder="Full name"
+          />
           <TextField
             label="Email"
             name="email"
             placeholder="Email Address"
+            defaultValue={actionData?.fields?.email}
+            error={actionData?.fieldErrors?.email}
             type="email"
           />
           <TextField
             label="Password"
             name="password"
+            defaultValue={actionData?.fields?.password}
+            error={actionData?.fieldErrors?.password}
             placeholder="Password"
             type="password"
           />
           <TextField
             label="Confirm Password"
             placeholder="Confirm Password"
+            defaultValue={actionData?.fields?.confirmPassword}
             name="confirmPassword"
             type="password"
           />

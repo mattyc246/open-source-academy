@@ -9,5 +9,6 @@ export const colors = {
   accentLight: '#8956d6',
   greyLight: '#F2F2F2',
   greyMid: '#c7c7c7',
-  greyDark: '#8c8c8c'
+  greyDark: '#8c8c8c',
+  error: '#ff4040'
 };
