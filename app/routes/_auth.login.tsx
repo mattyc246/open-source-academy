@@ -45,7 +45,7 @@ export const action = async ({ request }: ActionArgs) => {
   const form = await request.formData();
   const password = form.get('password');
   const email = form.get('email');
-  const redirectTo = validateUrl((form.get('redirectTo') as string) || '/');
+  const redirectTo = validateUrl((form.get('redirectTo') as string) || '/app');
 
   const fields = { password, email, redirectTo };
 
@@ -75,7 +75,7 @@ export const loader = async ({ request }: LoaderArgs) => {
   if (user) {
     return redirect('/');
   }
-  
+
   return json({});
 };
 

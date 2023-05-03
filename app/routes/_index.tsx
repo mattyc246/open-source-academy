@@ -1,4 +1,5 @@
 import type { LoaderArgs, V2_MetaFunction } from '@remix-run/node';
+import type { User } from '@prisma/client';
 
 import styled from 'styled-components';
 
@@ -28,7 +29,7 @@ const Index: React.FC = () => {
 
   return (
     <Box>
-      <Navbar isLoggedIn={Boolean(data.user)} />
+      <Navbar user={data.user as User} isHome />
     </Box>
   );
 };
